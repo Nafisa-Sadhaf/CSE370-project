@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Trade & Invest | Capital Advisor{% endblock %}
+{% block content %}
+<div class="page-content">
+    <div class="page-header">
+        <div class="page-title">
+            <h1>Trade & Invest</h1>
+            <p>Execute transactions and discover new investment opportunities.</p>
+        </div>
+    </div>
+    <div class="detail-grid">
+        <div class="glass-card">
+            <h3 style="margin-bottom:20px;">Make a Transaction</h3>
+            <form action="/transfer_money" method="POST" style="display:flex;flex-direction:column;gap:16px;">
+                <div class="input-group" style="margin-bottom:0;">
+                    <label>Transaction Type</label>
+                    <select name="tx_type" required>
+                        <option value="Buy">Buy Asset</option>
+                        <option value="Sell">Sell Asset</option>
+                        <option value="Deposit">Deposit Funds</option>
+                        <option value="Withdraw">Withdraw Funds</option>
+                    </select>
+                </div>
+                <div class="input-group" style="margin-bottom:0;">
+                    <label>Amount / Quantity</label>
+                    <input type="number" name="amount" placeholder="Enter amount" required min="1">
+                </div>
+                <div class="input-group" style="margin-bottom:0;">
+                    <label>Your Current Location (City)</label>
+                    <input type="text" name="location" placeholder="e.g. Dhaka" required>
+                </div>
+                <button type="submit" class="primary-btn justify-center mt-4">Review Order</button>
+            </form>
+        </div>
+
+        <div class="glass-card">
+            <h3 style="margin-bottom:20px;">Trending Opportunities</h3>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr><th>Asset</th><th>Type</th><th>Price</th><th>24h</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>NVIDIA Corp.</strong><br><span style="font-size:0.75rem;color:var(--text-secondary);">NVDA</span></td>
+                            <td>Stock</td><td>৳850.20</td>
+                            <td class="trend up">+5.2%</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Global Green Energy</strong><br><span style="font-size:0.75rem;color:var(--text-secondary);">GGE ETF</span></td>
+                            <td>ETF</td><td>৳42.15</td>
+                            <td class="trend up">+1.1%</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Tech Growth Fund</strong><br><span style="font-size:0.75rem;color:var(--text-secondary);">Mutual Fund</span></td>
+                            <td>Fund</td><td>৳125.00</td>
+                            <td class="trend down">-0.4%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

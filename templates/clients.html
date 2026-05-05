@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Clients | Capital Advisor{% endblock %}
+{% block content %}
+<div class="page-content">
+    <div class="page-header">
+        <div class="page-title">
+            <h1>Client Roster</h1>
+            <p>View client profiles, assigned advisors, and financial goals.</p>
+        </div>
+    </div>
+    <div class="glass-card">
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Client Profile</th>
+                        <th>Contact & Location</th>
+                        <th>Assigned Advisor</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for client, advisor in clients %}
+                    <tr>
+                        <td>
+                            <div class="profile-card">
+                                <div class="avatar" style="display:flex;align-items:center;justify-content:center;background:var(--hover-bg);border:none;font-weight:600;">
+                                    {{ client.Name[0] if client.Name else '?' }}
+                                </div>
+                                <div class="profile-info">
+                                    <h4>{{ client.Name }}</h4>
+                                    <p>CLI-{{ client.ClientID }}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div>{{ client.Email or 'N/A' }}</div>
+                            <div style="font-size:0.8rem;color:var(--text-secondary);">{{ client.Phone or '' }}</div>
+                        </td>
+                        <td>{{ advisor.Name if advisor else 'Unassigned' }}</td>
+                        <td>
+                            <span class="badge {{ 'active' if client.Status == 'active' else 'pending' }}">
+                                {{ (client.Status or 'active')|upper }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="4" style="text-align:center;color:var(--text-secondary);">No clients found.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

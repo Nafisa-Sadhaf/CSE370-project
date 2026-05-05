@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Home | Capital Advisor{% endblock %}
+{% block content %}
+<div class="page-content">
+    <div class="page-header">
+        <div class="page-title">
+            <h1>Welcome, {{ client.Name if client else user_name }}</h1>
+            <p>Here is an overview of your account and your assigned advisor.</p>
+        </div>
+    </div>
+
+    <div class="grid-cards">
+        <div class="glass-card">
+            <h3 style="margin-bottom:20px;">Your Advisor</h3>
+            {% if advisor %}
+            <div class="profile-card" style="margin-bottom:16px;">
+                <img src="https://i.pravatar.cc/150?u={{ advisor.AdvisorID }}" alt="{{ advisor.Name }}">
+                <div class="profile-info">
+                    <h4>{{ advisor.Name }}</h4>
+                    <p>{{ advisor.Specialization or 'Financial Advisor' }}</p>
+                </div>
+            </div>
+            <p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:16px;">
+                {{ advisor.Name }} is your primary advisor. Contact them for personalized investment strategies.
+            </p>
+            {% else %}
+            <p style="color:var(--text-secondary);">No advisor assigned yet.</p>
+            {% endif %}
+        </div>
+        <div class="glass-card">
+            <h3 style="margin-bottom:20px;">Recent Transactions</h3>
+            {% if transactions %}
+            <div class="timeline">
+                {% for tx in transactions %}
+                <div class="timeline-item">
+                    <div class="timeline-date">{{ tx.CreatedAt.strftime('%b %d, %H:%M') if tx.CreatedAt else 'N/A' }}</div>
+                    <div class="timeline-content">
+                        <strong>{{ tx.TransactionType or 'Transaction' }}:</strong>
+                        ৳{{ "{:,.2f}".format(tx.Amount) }} from {{ tx.Location or 'N/A' }}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p style="color:var(--text-secondary);">No transactions yet.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="glass-card" style="margin-top:24px;">
+        <h3 style="margin-bottom:20px;">Make a Transaction</h3>
+        <form action="/transfer_money" method="POST" style="display:flex;flex-direction:column;gap:16px;max-width:400px;">
+            <div class="input-group" style="margin-bottom:0;">
+                <label>Transaction Type</label>
+                <select name="tx_type" required>
+                    <option value="Deposit">Deposit</option>
+                    <option value="Withdraw">Withdraw</option>
+                    <option value="Transfer">Transfer</option>
+                </select>
+            </div>
+            <div class="input-group" style="margin-bottom:0;">
+                <label>Amount (৳)</label>
+                <input type="number" name="amount" placeholder="Enter amount" required min="1">
+            </div>
+            <div class="input-group" style="margin-bottom:0;">
+                <label>Your Current Location (City)</label>
+                <input type="text" name="location" placeholder="e.g. New York" required>
+            </div>
+            <button type="submit" class="primary-btn" style="width:fit-content;">Submit Transaction</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

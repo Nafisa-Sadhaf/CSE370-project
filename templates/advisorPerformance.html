@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Advisor Analytics | Capital Advisor{% endblock %}
+{% block content %}
+<div class="page-content">
+    <div class="page-header">
+        <div class="page-title">
+            <h1>Advisor Performance Leaderboard</h1>
+            <p>Real-time analytics based on Portfolio Growth and Client Retention.</p>
+        </div>
+    </div>
+
+    <div class="analytics-grid">
+        {% for advisor, perf in stats %}
+        <div class="advisor-card glass-card">
+            <div class="profile-card" style="margin-bottom:16px;">
+                <img src="https://i.pravatar.cc/150?u={{ advisor.AdvisorID }}" alt="{{ advisor.Name }}">
+                <div class="profile-info">
+                    <h4>{{ advisor.Name }}</h4>
+                    <p style="color:var(--text-secondary);">{{ advisor.ExperienceYears or 0 }} Years Experience</p>
+                </div>
+            </div>
+            <div class="stat-group">
+                <div class="stat-item">
+                    <span class="label">Clients</span>
+                    <span class="value">{{ perf.TotalClients }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="label">Avg Growth</span>
+                    <span class="value growth-positive">+{{ perf.AvgPortfolioGrowth }}%</span>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="glass-card" style="text-align:center;padding:40px;">
+            <p style="color:var(--text-secondary);">No performance data available yet.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

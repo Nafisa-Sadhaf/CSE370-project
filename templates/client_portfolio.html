@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}My Portfolio | Capital Advisor{% endblock %}
+{% block content %}
+<div class="page-content">
+    <div class="page-header">
+        <div class="page-title">
+            <h1>My Personal Portfolio</h1>
+            <p>Track your asset performance and total valuation.</p>
+        </div>
+    </div>
+
+    <div class="glass-card" style="margin-bottom:24px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;border-bottom:1px solid var(--border-color);padding-bottom:16px;">
+            <div>
+                <p style="color:var(--text-secondary);font-size:0.9rem;">Total Portfolio Value</p>
+                <h2 style="font-size:2.5rem;color:var(--accent-primary);">BDT{{ "{:,.2f}".format(total_val) }}</h2>
+            </div>
+            <div style="text-align:right;">
+                <p style="color:var(--text-secondary);font-size:0.9rem;">All-Time Return</p>
+                <h2 style="font-size:1.8rem;" class="trend {{ 'up' if growth >= 0 else 'down' }}">
+                    {{ '+' if growth >= 0 else '' }}{{ "%.2f"|format(growth) }}%
+                </h2>
+            </div>
+        </div>
+
+        {% if assets %}
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Asset Name</th><th>Type</th><th>Purchase Date</th>
+                        <th>Qty</th><th>Avg Cost</th><th>Current Price</th>
+                        <th>Total Value</th><th>Return</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for asset in assets %}
+                    {% set cost  = (asset.Quantity or 0) * (asset.PurchasePrice or 0) %}
+                    {% set value = (asset.Quantity or 0) * (asset.CurrentValue or 0) %}
+                    {% set ret   = ((value - cost) / cost * 100) if cost > 0 else 0 %}
+                    <tr>
+                        <td><strong>{{ asset.AssetName }}</strong></td>
+                        <td><span class="badge active">{{ asset.AssetType }}</span></td>
+                        <td>{{ asset.PurchaseDate or 'N/A' }}</td>
+                        <td>{{ asset.Quantity }}</td>
+                        <td>৳{{ "{:,.2f}".format(asset.PurchasePrice or 0) }}</td>
+                        <td>৳{{ "{:,.2f}".format(asset.CurrentValue or 0) }}</td>
+                        <td>৳{{ "{:,.2f}".format(value) }}</td>
+                        <td class="trend {{ 'up' if ret >= 0 else 'down' }}">
+                            {{ '+' if ret >= 0 else '' }}{{ "%.2f"|format(ret) }}%
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p style="color:var(--text-secondary);text-align:center;padding:20px;">No assets in your portfolio yet.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

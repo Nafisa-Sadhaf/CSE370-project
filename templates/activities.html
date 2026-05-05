@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Activities | Capital Advisor{% endblock %}
+{% block content %}
+<div class="page-content">
+    <div class="page-header">
+        <div class="page-title">
+            <h1>Advisor-Client Activities</h1>
+            <p>Track appointments, transactions, and fraud flags.</p>
+        </div>
+    </div>
+
+    <div class="glass-card" style="margin-bottom:24px;">
+        <h3 style="margin-bottom:16px;"><i class="ri-calendar-line"></i> Appointments</h3>
+        <div class="table-container">
+            <table>
+                <thead><tr><th>Date</th><th>Client</th><th>Advisor</th><th>Topic</th><th>Notes</th></tr></thead>
+                <tbody>
+                    {% for appt, adv, cli in appointments %}
+                    <tr>
+                        <td>{{ appt.Date.strftime('%Y-%m-%d') if appt.Date else 'N/A' }}</td>
+                        <td>{{ cli.Name }}</td>
+                        <td>{{ adv.Name }}</td>
+                        <td>{{ appt.Topic or 'General Meeting' }}</td>
+                        <td style="font-size:0.85rem;color:var(--text-secondary);">{{ appt.Notes or '-' }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="5" style="text-align:center;color:var(--text-secondary);">No appointments recorded.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="glass-card" style="margin-bottom:24px;">
+        <h3 style="margin-bottom:16px;"><i class="ri-exchange-dollar-line"></i> Transactions</h3>
+        <div class="table-container">
+            <table>
+                <thead><tr><th>Date</th><th>Client</th><th>Type</th><th>Amount</th><th>Location</th><th>Status</th></tr></thead>
+                <tbody>
+                    {% for tx, cli in transactions %}
+                    <tr>
+                        <td>{{ tx.CreatedAt.strftime('%Y-%m-%d %H:%M') if tx.CreatedAt else 'N/A' }}</td>
+                        <td>{{ cli.Name }}</td>
+                        <td>{{ tx.TransactionType or 'Transfer' }}</td>
+                        <td>৳{{ "{:,.2f}".format(tx.Amount) }}</td>
+                        <td>{{ tx.Location or 'N/A' }}</td>
+                        <td><span class="badge active">{{ tx.Status or 'Completed' }}</span></td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="6" style="text-align:center;color:var(--text-secondary);">No transactions recorded.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="glass-card">
+        <h3 style="margin-bottom:16px;"><i class="ri-shield-keyhole-line"></i> Fraud Flags</h3>
+        <div class="table-container">
+            <table>
+                <thead><tr><th>Date</th><th>Client</th><th>Reason</th><th>Status</th></tr></thead>
+                <tbody>
+                    {% for flag, cli in flags %}
+                    <tr class="{{ 'status-red-zone' if flag.Status == 'Red Zone' else '' }}">
+                        <td>{{ flag.Date.strftime('%Y-%m-%d %H:%M') if flag.Date else 'N/A' }}</td>
+                        <td>{{ cli.Name }}</td>
+                        <td>{{ flag.Reason }}</td>
+                        <td><span class="badge flagged">{{ flag.Status }}</span></td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="4" style="text-align:center;color:var(--text-secondary);">No flags recorded.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

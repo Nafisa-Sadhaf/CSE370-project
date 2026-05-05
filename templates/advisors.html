@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Advisors | Capital Advisor{% endblock %}
+{% block content %}
+<div class="page-content">
+    <div class="page-header">
+        <div class="page-title">
+            <h1>Advisors Management</h1>
+            <p>Manage agency advisors and track performance.</p>
+        </div>
+    </div>
+    <div class="glass-card">
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Advisor Profile</th>
+                        <th>Contact</th>
+                        <th>Specialization</th>
+                        <th>Experience</th>
+                        <th>Clients</th>
+                        <th>Avg Growth</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for advisor, perf in advisors %}
+                    <tr>
+                        <td>
+                            <div class="profile-card">
+                                <img src="https://i.pravatar.cc/150?u={{ advisor.AdvisorID }}" alt="{{ advisor.Name }}">
+                                <div class="profile-info">
+                                    <h4>{{ advisor.Name }}</h4>
+                                    <p>ADV-{{ advisor.AdvisorID }}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ advisor.Email or 'N/A' }}</td>
+                        <td><span class="badge active">{{ advisor.Specialization or 'General' }}</span></td>
+                        <td>{{ advisor.ExperienceYears or 0 }} yrs</td>
+                        <td>{{ perf.TotalClients if perf else 'N/A' }}</td>
+                        <td class="trend up">{{ '+' ~ perf.AvgPortfolioGrowth ~ '%' if perf else 'N/A' }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="6" style="text-align:center;color:var(--text-secondary);">No advisors found.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

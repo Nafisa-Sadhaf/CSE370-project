@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Capital Advisor{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div id="app" style="display:flex;">
+
+    <nav class="sidebar">
+        <div class="logo">
+            <div class="logo-icon"></div>
+            <h2>Capital<br>Advisor</h2>
+        </div>
+        <ul class="nav-links">
+            {% if session.role == 'admin' %}
+                <li class="{{ 'active' if request.endpoint == 'dashboard' }}">
+                    <a href="{{ url_for('dashboard') }}"><i class="ri-dashboard-line"></i> Dashboard</a>
+                </li>
+                <li class="{{ 'active' if request.endpoint == 'view_advisors' }}">
+                    <a href="{{ url_for('view_advisors') }}"><i class="ri-user-star-line"></i> Advisors</a>
+                </li>
+                <li class="{{ 'active' if request.endpoint == 'view_clients' }}">
+                    <a href="{{ url_for('view_clients') }}"><i class="ri-team-line"></i> Clients</a>
+                </li>
+                <li class="{{ 'active' if request.endpoint == 'view_activities' }}">
+                    <a href="{{ url_for('view_activities') }}"><i class="ri-calendar-event-line"></i> Activities</a>
+                </li>
+                <li class="{{ 'active' if request.endpoint == 'view_portfolios' }}">
+                    <a href="{{ url_for('view_portfolios') }}"><i class="ri-briefcase-line"></i> Portfolios</a>
+                </li>
+                <li class="{{ 'active' if request.endpoint == 'view_suspicious' }}">
+                    <a href="{{ url_for('view_suspicious') }}"><i class="ri-shield-keyhole-line"></i> Fraud Monitor</a>
+                </li>
+                <li class="{{ 'active' if request.endpoint == 'advisor_analytics' }}">
+                    <a href="{{ url_for('advisor_analytics') }}"><i class="ri-bar-chart-line"></i> Analytics</a>
+                </li>
+            {% else %}
+                <li class="{{ 'active' if request.endpoint == 'client_home' }}">
+                    <a href="{{ url_for('client_home') }}"><i class="ri-home-5-line"></i> Home</a>
+                </li>
+                <li class="{{ 'active' if request.endpoint == 'client_portfolio' }}">
+                    <a href="{{ url_for('client_portfolio') }}"><i class="ri-pie-chart-2-line"></i> My Portfolio</a>
+                </li>
+                <li class="{{ 'active' if request.endpoint == 'trade' }}">
+                    <a href="{{ url_for('trade') }}"><i class="ri-exchange-funds-line"></i> Trade & Invest</a>
+                </li>
+                <li class="{{ 'active' if request.endpoint == 'view_goals' }}">
+                    <a href="{{ url_for('view_goals') }}"><i class="ri-flag-line"></i> Goals & Alerts</a>
+                </li>
+                <li class="{{ 'active' if request.endpoint == 'view_health' }}">
+                    <a href="{{ url_for('view_health') }}"><i class="ri-heart-pulse-line"></i> Health Score</a>
+                </li>
+                <li class="{{ 'active' if request.endpoint == 'view_appointments' }}">
+                    <a href="{{ url_for('view_appointments') }}"><i class="ri-calendar-check-line"></i> Appointments</a>
+                </li>
+            {% endif %}
+        </ul>
+        <div class="user-profile">
+            <img src="https://i.pravatar.cc/150?img=11" alt="User" class="avatar">
+            <div class="user-info">
+                <p class="name">{{ session.user_name or 'User' }}</p>
+                <p class="role">{{ 'System Administrator' if session.role == 'admin' else 'Valued Client' }}</p>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <header class="topbar">
+            <div class="search-bar">
+                <i class="ri-search-line"></i>
+                <input type="text" placeholder="Search across the agency...">
+            </div>
+            <div class="topbar-actions">
+                <button class="icon-btn"><i class="ri-notification-3-line"></i></button>
+                <button class="icon-btn" id="theme-toggle"><i class="ri-moon-line"></i></button>
+                <a href="{{ url_for('logout') }}" class="icon-btn" title="Logout">
+                    <i class="ri-logout-box-r-line"></i>
+                </a>
+            </div>
+        </header>
+        <div class="content-container">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+</div>
+
+<script>
+const themeBtn = document.getElementById('theme-toggle');
+themeBtn.addEventListener('click', () => {
+    const html = document.documentElement;
+    if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        themeBtn.innerHTML = '<i class="ri-sun-line"></i>';
+    } else {
+        html.classList.add('dark');
+        themeBtn.innerHTML = '<i class="ri-moon-line"></i>';
+    }
+});
+</script>
+</body>
+</html>

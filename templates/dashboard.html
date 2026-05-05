@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Dashboard | Capital Advisor{% endblock %}
+{% block content %}
+<div class="page-content">
+    <div class="page-header">
+        <div class="page-title">
+            <h1>Agency Overview</h1>
+            <p>Welcome back, {{ user_name }}. Here's what's happening today.</p>
+        </div>
+    </div>
+
+    <div class="grid-cards">
+        <div class="glass-card stat-card">
+            <div class="stat-icon"><i class="ri-user-star-line"></i></div>
+            <div class="stat-info">
+                <p>Total Advisors</p>
+                <h3>{{ advisors|length }}</h3>
+            </div>
+        </div>
+        <div class="glass-card stat-card">
+            <div class="stat-icon" style="color:var(--accent-secondary)"><i class="ri-team-line"></i></div>
+            <div class="stat-info">
+                <p>Total Clients</p>
+                <h3>{{ clients|length }}</h3>
+            </div>
+        </div>
+        <div class="glass-card stat-card">
+            <div class="stat-icon" style="color:var(--success)"><i class="ri-calendar-event-line"></i></div>
+            <div class="stat-info">
+                <p>Appointments</p>
+                <h3>{{ appointments|length }}</h3>
+            </div>
+        </div>
+        <div class="glass-card stat-card">
+            <div class="stat-icon" style="color:var(--warning)"><i class="ri-alert-line"></i></div>
+            <div class="stat-info">
+                <p>Active Alerts</p>
+                <h3>{{ alerts_count }}</h3>
+                <span class="trend down"><i class="ri-arrow-down-line"></i> Requires attention</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="glass-card" style="margin-top:24px;">
+        <h3 style="margin-bottom:20px;">Recent Activity</h3>
+        {% if recent_activities %}
+        <div class="timeline">
+            {% for act in recent_activities %}
+            <div class="timeline-item">
+                <div class="timeline-date">{{ act.date.strftime('%Y-%m-%d %H:%M') if act.date else 'N/A' }}</div>
+                <div class="timeline-content">
+                    <strong>{{ act.type }}:</strong> {{ act.detail }}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p style="color:var(--text-secondary);">No recent activity yet.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

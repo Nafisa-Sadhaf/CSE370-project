@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Portfolios | Capital Advisor{% endblock %}
+{% block content %}
+<div class="page-content">
+    <div class="page-header">
+        <div class="page-title">
+            <h1>Investment Portfolio Management</h1>
+            <p>Analyze client assets, performance, and investments.</p>
+        </div>
+    </div>
+    <div class="glass-card">
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Client</th>
+                        <th>Asset Name</th>
+                        <th>Type</th>
+                        <th>Qty</th>
+                        <th>Purchase Price</th>
+                        <th>Current Value</th>
+                        <th>Total Value</th>
+                        <th>Return</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for asset, client in portfolios %}
+                    {% set cost  = (asset.Quantity or 0) * (asset.PurchasePrice or 0) %}
+                    {% set value = (asset.Quantity or 0) * (asset.CurrentValue or 0) %}
+                    {% set ret   = ((value - cost) / cost * 100) if cost > 0 else 0 %}
+                    <tr>
+                        <td>{{ client.Name }}</td>
+                        <td><strong>{{ asset.AssetName or 'N/A' }}</strong></td>
+                        <td><span class="badge active">{{ asset.AssetType or 'N/A' }}</span></td>
+                        <td>{{ asset.Quantity or 0 }}</td>
+                        <td>৳{{ "{:,.2f}".format(asset.PurchasePrice or 0) }}</td>
+                        <td>৳{{ "{:,.2f}".format(asset.CurrentValue or 0) }}</td>
+                        <td>৳{{ "{:,.2f}".format(value) }}</td>
+                        <td class="trend {{ 'up' if ret >= 0 else 'down' }}">
+                            {{ '+' if ret >= 0 else '' }}{{ "%.2f"|format(ret) }}%
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="8" style="text-align:center;color:var(--text-secondary);">No portfolio data found.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

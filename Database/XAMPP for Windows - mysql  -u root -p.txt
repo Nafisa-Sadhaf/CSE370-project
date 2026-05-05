@@ -1,0 +1,283 @@
+
+Setting environment for using XAMPP for Windows.
+ASUS@LAPTOP-SCUQDJ5A c:\Users\ASUS\Desktop\XAMPP
+# mysql -u root -p
+Enter password:
+Welcome to the MariaDB monitor.  Commands end with ; or \g.
+Your MariaDB connection id is 8
+Server version: 10.4.32-MariaDB mariadb.org binary distribution
+
+Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+MariaDB [(none)]> CREATE DATABASE capital_advisory;
+Query OK, 1 row affected (0.002 sec)
+
+MariaDB [(none)]> USE capital_advisory;
+Database changed
+MariaDB [capital_advisory]> CREATE TABLE ADVISOR (
+    ->     AdvisorID       INT AUTO_INCREMENT PRIMARY KEY,
+    ->     Name            VARCHAR(100),
+    ->     Email           VARCHAR(100),
+    ->     Specialization  VARCHAR(100),
+    ->     ExperienceYears INT,
+    ->     JoinDate        VARCHAR(20),
+    ->     Username        VARCHAR(50) UNIQUE,
+    ->     Password        VARCHAR(255)
+    -> );
+Query OK, 0 rows affected (0.024 sec)
+
+MariaDB [capital_advisory]> CREATE TABLE CLIENT (
+    ->     ClientID  INT AUTO_INCREMENT PRIMARY KEY,
+    ->     Name      VARCHAR(100),
+    ->     Email     VARCHAR(100),
+    ->     Phone     VARCHAR(20),
+    ->     Address   VARCHAR(200),
+    ->     HomeCity  VARCHAR(100),
+    ->     Username  VARCHAR(50) UNIQUE,
+    ->     Password  VARCHAR(255),
+    ->     AdvisorID INT,
+    ->     Status    VARCHAR(20) DEFAULT 'active',
+    ->     FOREIGN KEY (AdvisorID) REFERENCES ADVISOR(AdvisorID)
+    -> );
+Query OK, 0 rows affected (0.028 sec)
+
+MariaDB [capital_advisory]> CREATE TABLE PORTFOLIO (
+    ->     PortfolioID   INT AUTO_INCREMENT PRIMARY KEY,
+    ->     ClientID      INT,
+    ->     AssetName     VARCHAR(100),
+    ->     AssetType     VARCHAR(50),
+    ->     Quantity      FLOAT,
+    ->     PurchasePrice FLOAT,
+    ->     CurrentValue  FLOAT,
+    ->     PurchaseDate  VARCHAR(20),
+    ->     TotalValue    FLOAT,
+    ->     FOREIGN KEY (ClientID) REFERENCES CLIENT(ClientID)
+    -> );
+Query OK, 0 rows affected (0.031 sec)
+
+MariaDB [capital_advisory]> CREATE TABLE INVESTMENT (
+    ->     InvestmentID INT AUTO_INCREMENT PRIMARY KEY,
+    ->     PortfolioID  INT,
+    ->     Amount       FLOAT,
+    ->     InvestedAt   DATETIME DEFAULT CURRENT_TIMESTAMP,
+    ->     FOREIGN KEY (PortfolioID) REFERENCES PORTFOLIO(PortfolioID)
+    -> );
+Query OK, 0 rows affected (0.026 sec)
+
+MariaDB [capital_advisory]> CREATE TABLE TRANSACTION (
+    ->
+    ->     TransactionID   INT AUTO_INCREMENT PRIMARY KEY,
+    ->
+    ->     ClientID        INT,
+    ->
+    ->     Amount          FLOAT,
+    ->
+    ->     Location        VARCHAR(100),
+    ->
+    ->     TransactionType VARCHAR(50),
+    ->
+    ->     Status          VARCHAR(50) DEFAULT 'Completed',
+    ->
+    ->     CreatedAt       DATETIME DEFAULT CURRENT_TIMESTAMP,
+    ->
+    ->     FOREIGN KEY (ClientID) REFERENCES CLIENT(ClientID)
+    ->
+    -> );
+Query OK, 0 rows affected (0.023 sec)
+
+MariaDB [capital_advisory]> CREATE TABLE FRAUD_FLAG (
+    ->     FraudID  INT AUTO_INCREMENT PRIMARY KEY,
+    ->     ClientID INT,
+    ->     Reason   VARCHAR(255),
+    ->     Status   VARCHAR(50),
+    ->     Date     DATETIME DEFAULT CURRENT_TIMESTAMP,
+    ->     FOREIGN KEY (ClientID) REFERENCES CLIENT(ClientID)
+    -> );
+Query OK, 0 rows affected (0.028 sec)
+
+MariaDB [capital_advisory]> CREATE TABLE FINANCIAL_GOAL (
+    ->     GoalID        INT AUTO_INCREMENT PRIMARY KEY,
+    ->     ClientID      INT,
+    ->     GoalName      VARCHAR(100),
+    ->     TargetAmount  FLOAT,
+    ->     CurrentAmount FLOAT,
+    ->     Deadline      DATE,
+    ->     FOREIGN KEY (ClientID) REFERENCES CLIENT(ClientID)
+    -> );
+Query OK, 0 rows affected (0.021 sec)
+
+MariaDB [capital_advisory]> CREATE TABLE APPOINTMENT (
+    ->     AppointmentID INT AUTO_INCREMENT PRIMARY KEY,
+    ->     ClientID      INT,
+    ->     AdvisorID     INT,
+    ->     Date          DATETIME,
+    ->     Topic         VARCHAR(200),
+    ->     Notes         TEXT,
+    ->     FOREIGN KEY (AdvisorID) REFERENCES ADVISOR(AdvisorID)
+    -> );
+Query OK, 0 rows affected (0.024 sec)
+
+MariaDB [capital_advisory]> CREATE TABLE ADVISOR_PERFORMANCE (
+    ->     PerformanceID      INT AUTO_INCREMENT PRIMARY KEY,
+    ->     AdvisorID          INT,
+    ->     TotalClients       INT,
+    ->     AvgPortfolioGrowth FLOAT,
+    ->     FOREIGN KEY (AdvisorID) REFERENCES ADVISOR(AdvisorID)
+    -> );
+Query OK, 0 rows affected (0.029 sec)
+
+MariaDB [capital_advisory]> INSERT INTO ADVISOR (Name, Email, Specialization, ExperienceYears, JoinDate, Username, Password) VALUES
+    -> ('Sarah Jenkins', 'sarah.j@capital.com', 'Wealth Management',   6, '2020-05-15', 'sarah',   'pass123'),
+    -> ('Michael Chen',  'm.chen@capital.com',  'Retirement Planning',  7, '2019-11-02', 'michael', 'pass123'),
+    -> ('David Okafor',  'david.o@capital.com', 'Tax Strategies',       3, '2022-01-20', 'david',   'pass123');
+Query OK, 3 rows affected (0.044 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+MariaDB [capital_advisory]> INSERT INTO CLIENT (Name, Email, Phone, Address, HomeCity, Username, Password, AdvisorID, Status) VALUES
+    -> ('Robert Fox',       'robert.fox@gmail.com', '+1 555-1234', '123 Main St',   'New York',    'robert',   'pass123', 1, 'active'),
+    -> ('Esther Howard',    'esther.h@gmail.com',   '+1 555-9876', '456 Oak Ave',   'Los Angeles', 'esther',   'pass123', 2, 'active'),
+    -> ('Brooklyn Simmons', 'brooklyn.s@gmail.com', '+1 555-4567', '789 Pine Rd',   'Dallas',      'brooklyn', 'pass123', 1, 'pending'),
+    -> ('James Carter',     'james.c@gmail.com',    '+1 555-2345', '321 Elm St',    'Chicago',     'james',    'pass123', 3, 'active'),
+    -> ('Lisa Turner',      'lisa.t@gmail.com',     '+1 555-6789', '654 Maple Ave', 'Houston',     'lisa',     'pass123', 2, 'active');
+Query OK, 5 rows affected (0.006 sec)
+Records: 5  Duplicates: 0  Warnings: 0
+
+MariaDB [capital_advisory]>
+MariaDB [capital_advisory]> TRUNCATE TABLE  ADVISOR;
+ERROR 1701 (42000): Cannot truncate a table referenced in a foreign key constraint (`capital_advisory`.`advisor_performance`, CONSTRAINT `advisor_performance_ibfk_1` FOREIGN KEY (`AdvisorID`) REFERENCES `capital_advisory`.`advisor` (`AdvisorID`))
+MariaDB [capital_advisory]> DELETE FROM ADVISOR;
+ERROR 1451 (23000): Cannot delete or update a parent row: a foreign key constraint fails (`capital_advisory`.`client`, CONSTRAINT `client_ibfk_1` FOREIGN KEY (`AdvisorID`) REFERENCES `advisor` (`AdvisorID`))
+MariaDB [capital_advisory]> DELETE FROM CIENT;
+ERROR 1146 (42S02): Table 'capital_advisory.cient' doesn't exist
+MariaDB [capital_advisory]> DELETE FROM CLIENT;
+Query OK, 5 rows affected (0.004 sec)
+
+MariaDB [capital_advisory]> DELETE FROM ADVISOR;
+Query OK, 3 rows affected (0.004 sec)
+
+MariaDB [capital_advisory]> INSERT INTO ADVISOR (Name, Email, Specialization, ExperienceYears, JoinDate, Username, Password) VALUES
+    -> ('Md. Abdur Rahman',   'rahman@capitalbd.com',  'Wealth Management',   8, '2019-03-10', 'rahman',  'pass123'),
+    -> ('Farida Sultana',     'sultana@capitalbd.com', 'Retirement Planning',  5, '2021-06-01', 'sultana', 'pass123'),
+    -> ('Kamal Hossain',      'hossain@capitalbd.com', 'Tax & Investment',     6, '2020-09-15', 'hossain', 'pass123');
+Query OK, 3 rows affected (0.002 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+MariaDB [capital_advisory]> INSERT INTO CLIENT (Name, Email, Phone, Address, HomeCity, Username, Password, AdvisorID, Status) VALUES
+    -> ('Md. Rahim Uddin',    'rahim.uddin@gmail.com',    '+880 1711-234567', 'House 12, Road 5, Dhanmondi, Dhaka',  'Dhaka',      'rahim',   'pass123', 1, 'active'),
+    -> ('Nusrat Jahan',       'nusrat.jahan@gmail.com',   '+880 1812-345678', 'Flat 3B, Agrabad, Chittagong',  'Chittagong',  'nusrat',  'pass123', 2, 'active'),
+    -> ('Tanvir Ahmed',       'tanvir.ahmed@gmail.com',   '+880 1913-456789', 'House 7, Mirpur-10, Dhaka',  'Dhaka',      'tanvir',  'pass123', 1, 'pending'),
+    -> ('Mithila Akter',      'mithila.akter@gmail.com',  '+880 1615-567890', 'Flat 2A, Zindabazar, Sylhet',  'Sylhet',     'mithila', 'pass123', 3, 'active'),
+    -> ('Rakib Hasan',        'rakib.hasan@gmail.com',    '+880 1716-678901', 'House 9, Shaheb Bazar, Rajshahi',  'Rajshahi',   'rakib',   'pass123', 2, 'active');
+ERROR 1452 (23000): Cannot add or update a child row: a foreign key constraint fails (`capital_advisory`.`client`, CONSTRAINT `client_ibfk_1` FOREIGN KEY (`AdvisorID`) REFERENCES `advisor` (`AdvisorID`))
+MariaDB [capital_advisory]> DELETE FROM CLIENT;
+Query OK, 0 rows affected (0.001 sec)
+
+MariaDB [capital_advisory]> DELETE FROM ADVISOR;
+Query OK, 3 rows affected (0.004 sec)
+
+MariaDB [capital_advisory]> SET FOREIGN_KEY_CHECKS = 0;
+Query OK, 0 rows affected (0.001 sec)
+
+MariaDB [capital_advisory]> TRUNCATE TABLE CLIENT;
+Query OK, 0 rows affected (0.027 sec)
+
+MariaDB [capital_advisory]> TRUNCATE TABLE ADVISOR;
+Query OK, 0 rows affected (0.026 sec)
+
+MariaDB [capital_advisory]> SET FOREIGN_KEY_CHECKS = 1;
+Query OK, 0 rows affected (0.000 sec)
+
+MariaDB [capital_advisory]> INSERT INTO ADVISOR (Name, Email, Specialization, ExperienceYears, JoinDate, Username, Password) VALUES
+    -> ('Md. Abdur Rahman',   'rahman@capitalbd.com',  'Wealth Management',   8, '2019-03-10', 'rahman',  'pass123'),
+    -> ('Farida Sultana',     'sultana@capitalbd.com', 'Retirement Planning',  5, '2021-06-01', 'sultana', 'pass123'),
+    -> ('Kamal Hossain',      'hossain@capitalbd.com', 'Tax & Investment',     6, '2020-09-15', 'hossain', 'pass123');
+Query OK, 3 rows affected (0.003 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+MariaDB [capital_advisory]> INSERT INTO CLIENT (Name, Email, Phone, Address, HomeCity, Username, Password, AdvisorID, Status) VALUES
+    -> ('Md. Rahim Uddin',    'rahim.uddin@gmail.com',    '+880 1711-234567', 'House 12, Road 5, Dhanmondi, Dhaka',  'Dhaka',      'rahim',   'pass123', 1, 'active'),
+    -> ('Nusrat Jahan',       'nusrat.jahan@gmail.com',   '+880 1812-345678', 'Flat 3B, Agrabad, Chittagong',  'Chittagong',  'nusrat',  'pass123', 2, 'active'),
+    -> ('Tanvir Ahmed',       'tanvir.ahmed@gmail.com',   '+880 1913-456789', 'House 7, Mirpur-10, Dhaka',  'Dhaka',      'tanvir',  'pass123', 1, 'pending'),
+    -> ('Mithila Akter',      'mithila.akter@gmail.com',  '+880 1615-567890', 'Flat 2A, Zindabazar, Sylhet',  'Sylhet',     'mithila', 'pass123', 3, 'active'),
+    -> ('Rakib Hasan',        'rakib.hasan@gmail.com',    '+880 1716-678901', 'House 9, Shaheb Bazar, Rajshahi',  'Rajshahi',   'rakib',   'pass123', 2, 'active');
+Query OK, 5 rows affected (0.003 sec)
+Records: 5  Duplicates: 0  Warnings: 0
+
+MariaDB [capital_advisory]> INSERT INTO PORTFOLIO (ClientID, AssetName, AssetType, Quantity, PurchasePrice, CurrentValue, PurchaseDate, TotalValue) VALUES
+    -> (1, 'Grameenphone Ltd.',          'Stock',        200,  320.00,  398.50, '2023-02-10',  79700.00),
+    -> (1, 'Bangladesh Sanchayapatra',   'Bond',           5, 100000.00, 100000.00, '2022-07-01', 500000.00),
+    -> (2, 'BRAC Bank Ltd.',             'Stock',        300,   55.00,   72.30, '2023-04-15',  21690.00),
+    -> (2, 'Square Pharmaceuticals',     'Stock',        150,  220.00,  265.00, '2022-11-20',  39750.00),
+    -> (3, 'Dutch-Bangla Bank Ltd.',     'Stock',        400,   85.00,   91.50, '2023-06-05',  36600.00),
+    -> (4, 'Islami Bank Bangladesh',     'Stock',        250,   35.00,   42.00, '2023-01-18',  10500.00),
+    -> (4, '5-Year Sanchayapatra',       'Bond',           3, 100000.00, 100000.00, '2021-09-01', 300000.00),
+    -> (5, 'Walton Hi-Tech Industries',  'Stock',        100,  850.00,  940.00, '2022-08-12',  94000.00),
+    -> (5, 'Beximco Pharmaceuticals',    'Stock',        500,   28.00,   35.50, '2023-10-03',  17750.00);
+Query OK, 9 rows affected (0.007 sec)
+Records: 9  Duplicates: 0  Warnings: 0
+
+MariaDB [capital_advisory]> INSERT INTO INVESTMENT (PortfolioID, Amount, InvestedAt) VALUES
+    -> (1,  64000.00,  '2023-02-10 10:00:00'),
+    -> (2, 500000.00,  '2022-07-01 11:00:00'),
+    -> (3,  16500.00,  '2023-04-15 09:30:00'),
+    -> (4,  33000.00,  '2022-11-20 14:00:00'),
+    -> (5,  34000.00,  '2023-06-05 10:30:00'),
+    -> (6,   8750.00,  '2023-01-18 09:00:00'),
+    -> (7, 300000.00,  '2021-09-01 11:00:00'),
+    -> (8,  85000.00,  '2022-08-12 13:00:00'),
+    -> (9,  14000.00,  '2023-10-03 15:00:00');
+Query OK, 9 rows affected (0.004 sec)
+Records: 9  Duplicates: 0  Warnings: 0
+
+MariaDB [capital_advisory]> INSERT INTO FINANCIAL_GOAL (ClientID, GoalName, TargetAmount, CurrentAmount, Deadline) VALUES
+    -> (1, 'Retirement Savings',      2000000.00, 1650000.00, '2030-12-31'),
+    -> (1, 'Hajj Fund',                300000.00,  178000.00, '2026-05-25'),
+    -> (2, 'Flat Purchase (Chittagong)', 3500000.00, 1400000.00, '2028-06-01'),
+    -> (3, 'Car Purchase',              800000.00,  465000.00, '2026-09-01'),
+    -> (4, 'Children Education Fund', 1500000.00,  870000.00, '2027-12-01'),
+    -> (5, 'Marriage Fund',             500000.00,  475000.00, '2026-08-01');
+Query OK, 6 rows affected (0.004 sec)
+Records: 6  Duplicates: 0  Warnings: 0
+
+MariaDB [capital_advisory]> INSERT INTO `TRANSACTION` (ClientID, Amount, Location, TransactionType, Status, CreatedAt) VALUES
+    -> (1,  50000.00, 'Dhaka',       'Deposit',  'Completed', '2026-04-25 14:30:00'),
+    -> (1,  15000.00, 'Dhaka',       'Withdraw', 'Completed', '2026-04-10 09:15:00'),
+    -> (2,  30000.00, 'Chittagong',  'Deposit',  'Completed', '2026-04-20 11:00:00'),
+    -> (3,  20000.00, 'Dhaka',       'Deposit',  'Completed', '2026-04-18 13:45:00'),
+    -> (4,  10000.00, 'Sylhet',      'Deposit',  'Completed', '2026-04-22 10:30:00'),
+    -> (5,  45000.00, 'Rajshahi',    'Deposit',  'Completed', '2026-04-15 15:00:00'),
+    -> (1,  80000.00, 'Mumbai',      'Transfer', 'Completed', '2026-04-26 22:00:00'),
+    -> (2, 150000.00, 'Singapore',   'Transfer', 'Completed', '2026-04-27 03:30:00'),
+    -> (3,   5000.00, 'Dhaka',       'Withdraw', 'Completed', '2026-04-28 08:00:00'),
+    -> (3,   5000.00, 'Dhaka',       'Withdraw', 'Completed', '2026-04-28 08:01:00');
+Query OK, 10 rows affected (0.007 sec)
+Records: 10  Duplicates: 0  Warnings: 0
+
+MariaDB [capital_advisory]> INSERT INTO FRAUD_FLAG (ClientID, Reason, Status, Date) VALUES
+    -> (1, 'Suspicious Location: Transaction from Mumbai.',     'Pending',  '2026-04-26 22:00:00'),
+    -> (2, 'Suspicious Location: Transaction from Singapore.',  'Pending',  '2026-04-27 03:30:00'),
+    -> (3, 'RED ZONE: 2 transactions in 2 mins.',               'Red Zone', '2026-04-28 08:01:00'),
+    -> (2, 'Threshold Alert: Less than 30% balance remaining.', 'Pending',  '2026-04-15 16:00:00');
+Query OK, 4 rows affected (0.006 sec)
+Records: 4  Duplicates: 0  Warnings: 0
+
+MariaDB [capital_advisory]> INSERT INTO APPOINTMENT (ClientID, AdvisorID, Date, Topic, Notes) VALUES
+    -> (1, 1, '2026-05-02 10:00:00', 'Annual Portfolio Review',         'Reviewed Grameenphone stock performance — up 24% YTD. Discussed rolling Sanchayapatra on maturity date.'),
+    -> (1, 1, '2026-02-14 14:00:00', 'Hajj Fund Planning',              'Discussed increasing monthly contribution to Tk 15,000 to meet Hajj Fund deadline. Client agreed.'),
+    -> (2, 2, '2026-04-15 11:00:00', 'Retirement & Housing Plan',       'Reviewed flat purchase goal. Recommended DPS (Deposit Pension Scheme) to accelerate savings for Chittagong flat.'),
+    -> (3, 1, '2026-03-20 09:30:00', 'Car Purchase Goal Session',       'Client targeting a Toyota Allion. Set monthly savings target of Tk 40,000. Reviewed Dutch-Bangla Bank portfolio.'),
+    -> (4, 3, '2026-04-28 15:00:00', 'Education Fund & Tax Planning',   'Discussed investing in Islami Bank Mudaraba Fund for Shariah-compliant growth. Reviewed tax exemption on Sanchayapatra.'),
+    -> (5, 2, '2026-04-10 13:00:00', 'Marriage Fund Final Review',      'Rakib is 95% to goal. Discussed liquidating Beximco shares after marriage to fund honeymoon expenses.');
+Query OK, 6 rows affected (0.005 sec)
+Records: 6  Duplicates: 0  Warnings: 0
+
+MariaDB [capital_advisory]> INSERT INTO ADVISOR_PERFORMANCE (AdvisorID, TotalClients, AvgPortfolioGrowth) VALUES
+    -> (1, 38, 14.2),
+    -> (2, 55, 11.6),
+    -> (3, 27, 16.8);
+Query OK, 3 rows affected (0.003 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+MariaDB [capital_advisory]>

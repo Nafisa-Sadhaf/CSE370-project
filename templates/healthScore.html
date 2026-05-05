@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Financial Health | Capital Advisor{% endblock %}
+{% block content %}
+<div class="page-content">
+    <div class="page-header">
+        <div class="page-title">
+            <h1>Financial Health Score</h1>
+            <p>Analysis for <strong>{{ client.Name if client else user_name }}</strong></p>
+        </div>
+    </div>
+
+    <div class="health-card">
+        <div class="score-display" style="color: {{ color }};">
+            {{ score }}%
+        </div>
+        <div class="progress-bar-bg">
+            <div class="progress-bar-fill" style="width: {{ score }}%; background-color: {{ color }};"></div>
+        </div>
+        <div class="status-label" style="color: {{ color }};">
+            {{ status }}
+        </div>
+        <div class="details">
+            <p><strong>Goal Name:</strong> {{ goal.GoalName if goal else 'N/A' }}</p>
+            <p><strong>Target:</strong> ৳{{ "{:,.2f}".format(goal.TargetAmount) if goal else '0.00' }}</p>
+            <p><strong>Current:</strong> ৳{{ "{:,.2f}".format(goal.CurrentAmount) if goal else '0.00' }}</p>
+        </div>
+        <hr style="margin:20px 0;border-color:var(--border-color);">
+        <small style="color:var(--text-secondary);">Data sourced from your Financial Goal records.</small>
+    </div>
+</div>
+{% endblock %}

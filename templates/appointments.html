@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Appointments | Capital Advisor{% endblock %}
+{% block content %}
+<div class="page-content">
+    <div class="page-header">
+        <div class="page-title">
+            <h1>Appointment History</h1>
+            <p>Review your past consultations and advisor notes.</p>
+        </div>
+    </div>
+
+    {% if history %}
+        {% for appt, adv in history %}
+        <div class="appointment-card glass-card" style="margin-bottom:16px;">
+            <div class="appt-header">
+                <span class="date">{{ appt.Date.strftime('%Y-%m-%d') if appt.Date else 'N/A' }}</span>
+                <span class="advisor">With: {{ adv.Name }}</span>
+            </div>
+            {% if appt.Topic %}
+            <p style="margin-bottom:8px;"><strong>Topic:</strong> {{ appt.Topic }}</p>
+            {% endif %}
+            <div class="notes">
+                <strong>Meeting Notes:</strong>
+                <p>{{ appt.Notes or 'No notes recorded.' }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="glass-card" style="text-align:center;padding:40px;">
+            <p style="color:var(--text-secondary);">No past appointments recorded.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
