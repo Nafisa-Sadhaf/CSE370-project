@@ -11,6 +11,7 @@
 <body>
 <div id="app" style="display:flex;">
 
+    <!-- Sidebar -->
     <nav class="sidebar">
         <div class="logo">
             <div class="logo-icon"></div>
@@ -64,11 +65,12 @@
             <img src="https://i.pravatar.cc/150?img=11" alt="User" class="avatar">
             <div class="user-info">
                 <p class="name">{{ session.user_name or 'User' }}</p>
-                <p class="role">{{ 'System Administrator' if session.role == 'admin' else 'Valued Client' }}</p>
+                <p class="role">{{ 'Financial Advisor' if session.role == 'admin' else 'Valued Client' }}</p>
             </div>
         </div>
     </nav>
 
+    <!-- Main Content -->
     <main class="main-content">
         <header class="topbar">
             <div class="search-bar">
