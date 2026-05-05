@@ -5,10 +5,11 @@
     <div class="page-header">
         <div class="page-title">
             <h1>Agency Overview</h1>
-            <p>Welcome back, {{ user_name }}. Here's what's happening today.</p>
+            <p>Welcome back, Advisor {{ user_name }}. Here's what's happening today.</p>
         </div>
     </div>
 
+    <!-- Stat Cards -->
     <div class="grid-cards">
         <div class="glass-card stat-card">
             <div class="stat-icon"><i class="ri-user-star-line"></i></div>
@@ -41,6 +42,7 @@
         </div>
     </div>
 
+    <!-- Recent Activity -->
     <div class="glass-card" style="margin-top:24px;">
         <h3 style="margin-bottom:20px;">Recent Activity</h3>
         {% if recent_activities %}
