@@ -222,11 +222,11 @@ def view_activities():
         flags=flags, user_name=session.get('user_name'))
 
 @app.route('/suspicious')
-def view_suspicious():  # <--- This MUST be exactly 'view_suspicious'
+def view_suspicious(): 
     if not session.get('user_id') or session.get('role') != 'admin':
         return redirect(url_for('login'))
     
-    # Fetch flags for the suspicious_2.html template
+  
     flags = FraudFlag.query.order_by(FraudFlag.Date.desc()).all()
     return render_template('suspicious.html', flags=flags)
 
@@ -284,23 +284,20 @@ def transfer_money():
     current_location = request.form.get('location', '')
     tx_type = request.form.get('tx_type', 'Transfer')
 
-    # --- BALANCE VALIDATION ---
+    
     assets = Portfolio.query.filter_by(ClientID=client_id).all()
-    # TotalValue in your DB is the current market value of assets[cite: 2]
+    
     total_assets = sum((a.TotalValue or 0) for a in assets)
 
     if amount > total_assets:
-        # Prevent the transaction if they don't have enough BDT
+        # Prevent the transaction when not enough BDT
         return render_template('trade.html', error="Insufficient balance in your portfolio.", user_name=session.get('user_name'))
 
-    # --- AUTOMATIC HEALTH SCORE UPDATE ---
-    # To make the health score change, we must update the CurrentAmount in FINANCIAL_GOAL
     goal = FinancialGoal.query.filter_by(ClientID=client_id).first()
     if goal:
-        # If it's a transfer/withdraw, subtract from their goal progress
+        
         goal.CurrentAmount = (goal.CurrentAmount or 0) - amount
     
-    # --- FRAUD DETECTION LOGIC ---
     two_mins_ago = datetime.now() - timedelta(minutes=2)
     recent_count = Transaction.query.filter(
         Transaction.ClientID == client_id,
@@ -359,8 +356,56 @@ def view_appointments():
 def advisor_analytics():
     if not session.get('user_id') or session.get('role') != 'admin':
         return redirect(url_for('login'))
-    stats = db.session.query(Advisor, AdvisorPerformance).join(
-        AdvisorPerformance, Advisor.AdvisorID == AdvisorPerformance.AdvisorID).all()
+
+    advisors = Advisor.query.all()
+    stats = []
+
+    for advisor in advisors:
+        # Step 1: Count all clients assigned to this advisor
+        clients = Client.query.filter_by(AdvisorID=advisor.AdvisorID).all()
+        total_clients = len(clients)
+
+        # Step 2: Loop through every asset of every client under this advisor
+        # and calculate growth % per asset, then average them all
+        client_growths = []
+        total_portfolio_value = 0
+
+        for client in clients:
+            assets = Portfolio.query.filter_by(ClientID=client.ClientID).all()
+            for asset in assets:
+                # AUM: sum of Quantity * CurrentValue
+                total_portfolio_value += (asset.Quantity or 0) * (asset.CurrentValue or 0)
+                # Growth % per asset: (CurrentValue - PurchasePrice) / PurchasePrice * 100
+                if asset.PurchasePrice and asset.PurchasePrice > 0:
+                    asset_growth = ((asset.CurrentValue - asset.PurchasePrice)
+                                    / asset.PurchasePrice * 100)
+                    client_growths.append(asset_growth)
+
+        # Step 3: Average all asset growths = AvgPortfolioGrowth
+        avg_growth = round(sum(client_growths) / len(client_growths), 2) if client_growths else 0.0
+
+        # Step 4: Write the computed values back to ADVISOR_PERFORMANCE table
+        perf = AdvisorPerformance.query.filter_by(AdvisorID=advisor.AdvisorID).first()
+        if perf:
+            perf.TotalClients       = total_clients
+            perf.AvgPortfolioGrowth = avg_growth
+        else:
+            perf = AdvisorPerformance(
+                AdvisorID=advisor.AdvisorID,
+                TotalClients=total_clients,
+                AvgPortfolioGrowth=avg_growth
+            )
+            db.session.add(perf)
+
+        stats.append({
+            'advisor':               advisor,
+            'total_clients':         total_clients,
+            'avg_growth':            avg_growth,
+            'total_portfolio_value': round(total_portfolio_value, 2)
+        })
+
+    db.session.commit()
+
     return render_template('advisorPerformance.html', stats=stats, user_name=session.get('user_name'))
 
 # Feature 5,7,8 
@@ -451,7 +496,7 @@ def add_transaction():
     )
     db.session.add(new_tx)
 
-    # --- FRAUD DETECTION LOGIC ---
+ 
     two_mins_ago = datetime.now() - timedelta(minutes=2)
     recent_count = Transaction.query.filter(
         Transaction.ClientID == c_id,
