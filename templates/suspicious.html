@@ -37,7 +37,7 @@
                         <td>
                             {% if flag.Status != 'Resolved' %}
                             <form action="/resolve/{{ flag.FraudID }}" method="POST" style="margin:0;">
-                                <button type="submit" class="btn-resolve">Clear Alert</button>
+                                <button type="submit" class="btn-resolve">Action Needed</button>
                             </form>
                             {% else %}
                             <span style="color:var(--success);font-size:0.85rem;">✓ Resolved</span>
