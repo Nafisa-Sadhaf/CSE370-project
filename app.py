@@ -1,5 +1,6 @@
 
 from flask import Flask, render_template, request, session, redirect, url_for
+from flask import flash 
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
@@ -220,6 +221,15 @@ def view_activities():
         appointments=appointments, transactions=transactions,
         flags=flags, user_name=session.get('user_name'))
 
+@app.route('/suspicious')
+def view_suspicious():  # <--- This MUST be exactly 'view_suspicious'
+    if not session.get('user_id') or session.get('role') != 'admin':
+        return redirect(url_for('login'))
+    
+    # Fetch flags for the suspicious_2.html template
+    flags = FraudFlag.query.order_by(FraudFlag.Date.desc()).all()
+    return render_template('suspicious.html', flags=flags)
+
 @app.route('/portfolios')
 def view_portfolios():
     if not session.get('user_id') or session.get('role') != 'admin':
@@ -263,61 +273,58 @@ def trade():
         return redirect(url_for('login'))
     return render_template('trade.html', user_name=session.get('user_name'))
 
-# Feature 9(Fraud Detection for client side)
+# Feature 9(Fraud Detection )
 @app.route('/transfer_money', methods=['POST'])
 def transfer_money():
     client_id = session.get('user_id')
     if not client_id:
         return redirect(url_for('login'))
-    amount           = float(request.form.get('amount', 0))
+        
+    amount = float(request.form.get('amount', 0))
     current_location = request.form.get('location', '')
-    tx_type          = request.form.get('tx_type', 'Transfer')
+    tx_type = request.form.get('tx_type', 'Transfer')
 
+    # --- BALANCE VALIDATION ---
+    assets = Portfolio.query.filter_by(ClientID=client_id).all()
+    # TotalValue in your DB is the current market value of assets[cite: 2]
+    total_assets = sum((a.TotalValue or 0) for a in assets)
+
+    if amount > total_assets:
+        # Prevent the transaction if they don't have enough BDT
+        return render_template('trade.html', error="Insufficient balance in your portfolio.", user_name=session.get('user_name'))
+
+    # --- AUTOMATIC HEALTH SCORE UPDATE ---
+    # To make the health score change, we must update the CurrentAmount in FINANCIAL_GOAL
+    goal = FinancialGoal.query.filter_by(ClientID=client_id).first()
+    if goal:
+        # If it's a transfer/withdraw, subtract from their goal progress
+        goal.CurrentAmount = (goal.CurrentAmount or 0) - amount
+    
+    # --- FRAUD DETECTION LOGIC ---
     two_mins_ago = datetime.now() - timedelta(minutes=2)
     recent_count = Transaction.query.filter(
         Transaction.ClientID == client_id,
         Transaction.CreatedAt >= two_mins_ago).count()
 
-    assets     = Portfolio.query.filter_by(ClientID=client_id).all()
-    total_val  = sum((a.TotalValue or 0) for a in assets)
-    is_threshold = total_val > 0 and (total_val - amount) < (total_val * 0.3)
-
-    client_info   = Client.query.get(client_id)
-    is_location   = current_location and current_location != (client_info.HomeCity or '')
+    is_threshold = total_assets > 0 and (total_assets - amount) < (total_assets * 0.3)
+    client_info = Client.query.get(client_id)
+    is_location = current_location and current_location != (client_info.HomeCity or '')
 
     alert_triggered, alert_reason, alert_status = False, "", "Pending"
     if recent_count >= 2:
-        alert_triggered = True
-        alert_reason    = f"RED ZONE: {recent_count} transactions in 2 mins."
-        alert_status    = "Red Zone"
+        alert_triggered, alert_reason, alert_status = True, f"RED ZONE: {recent_count} transactions in 2 mins.", "Red Zone"
     elif is_threshold:
-        alert_triggered = True
-        alert_reason    = "Threshold Alert: Less than 30% balance remaining."
+        alert_triggered, alert_reason = True, "Threshold Alert: Less than 30% balance remaining."
     elif is_location:
-        alert_triggered = True
-        alert_reason    = f"Suspicious Location: Transaction from {current_location}."
+        alert_triggered, alert_reason = True, f"Suspicious Location: Transaction from {current_location}."
 
     if alert_triggered:
         db.session.add(FraudFlag(ClientID=client_id, Reason=alert_reason, Status=alert_status))
-    db.session.add(Transaction(ClientID=client_id, Amount=amount,
-        Location=current_location, TransactionType=tx_type))
-    db.session.commit()
+    
+    db.session.add(Transaction(ClientID=client_id, Amount=amount, Location=current_location, TransactionType=tx_type))
+    
+    db.session.commit() 
     return redirect(url_for('client_home'))
-
-# Feature 9(for admin side)
-@app.route('/suspicious')
-def view_suspicious():
-    if not session.get('user_id') or session.get('role') != 'admin':
-        return redirect(url_for('login'))
-    flags = FraudFlag.query.order_by(FraudFlag.Date.desc()).all()
-    return render_template('suspicious.html', flags=flags, user_name=session.get('user_name'))
-
-@app.route('/resolve/<int:fraud_id>', methods=['POST'])
-def resolve_flag(fraud_id):
-    flag = FraudFlag.query.get_or_404(fraud_id)
-    flag.Status = "Resolved"
-    db.session.commit()
-    return redirect(url_for('view_suspicious'))
 
 # Feature 10(Health Score)
 @app.route('/health-score')
@@ -407,10 +414,11 @@ def view_goals():
         alerts=alerts, user_name=session.get('user_name'))
 
 
-# Feature 6
+# Feature 6 
+
 @app.route('/add_transaction', methods=['POST'])
 def add_transaction():
-    c_id    = session.get('user_id')
+    c_id = session.get('user_id')
     if not c_id:
         return redirect(url_for('login'))
 
@@ -419,19 +427,31 @@ def add_transaction():
     trans_type = request.form.get('type')   # 'Deposit' or 'Withdrawal'
     location   = request.form.get('location', '')
 
-    #Record the transaction
-    db.session.add(Transaction(
-        ClientID=c_id, Amount=amount,
-        Location=location, TransactionType=trans_type, Status='Completed'))
-
+    # --- VALIDATION: PREVENT OVER-WITHDRAWAL ---
     # Update goal balance
     if goal_id:
         goal = FinancialGoal.query.get(goal_id)
-        if goal:
-            adjustment = amount if trans_type == 'Deposit' else -amount
-            goal.CurrentAmount = (goal.CurrentAmount or 0) + adjustment
+    else:
+        # AUTOMATIC FIX: If no goal_id was sent, find the first goal for this client
+        goal = FinancialGoal.query.filter_by(ClientID=c_id).first()
 
-    #fraud detection
+    if goal:
+        # This is where the math happens to update the 'CurrentAmount' column in MariaDB
+        adjustment = amount if trans_type == 'Deposit' else -amount
+        goal.CurrentAmount = (goal.CurrentAmount or 0) + adjustment
+        # After this runs, Feature 10 (Health Score) will automatically 
+        # recalculate using the new amount next time the page loads.
+
+    new_tx = Transaction(
+        ClientID=c_id, 
+        Amount=amount,
+        Location=location, 
+        TransactionType=trans_type, 
+        Status='Completed'
+    )
+    db.session.add(new_tx)
+
+    # --- FRAUD DETECTION LOGIC ---
     two_mins_ago = datetime.now() - timedelta(minutes=2)
     recent_count = Transaction.query.filter(
         Transaction.ClientID == c_id,
@@ -441,15 +461,26 @@ def add_transaction():
     is_location = location and location != (client_info.HomeCity or '')
 
     if recent_count >= 2:
-        db.session.add(FraudFlag(ClientID=c_id,
-            Reason=f"RED ZONE: {recent_count} transactions in 2 mins.", Status="Red Zone"))
+        db.session.add(FraudFlag(
+            ClientID=c_id,
+            Reason=f"RED ZONE: {recent_count} transactions in 2 mins.", 
+            Status="Red Zone"
+        ))
     elif is_location:
-        db.session.add(FraudFlag(ClientID=c_id,
-            Reason=f"Suspicious Location: Transaction from {location}.", Status="Pending"))
+        db.session.add(FraudFlag(
+            ClientID=c_id,
+            Reason=f"Suspicious Location: Transaction from {location}.", 
+            Status="Pending"
+        ))
 
-    db.session.commit()
+    db.session.commit() 
+    
+    if trans_type == 'Deposit':
+        flash(f"Successfully deposited ৳{amount:,.2f}!", "success")
+    else:
+        flash(f"Successfully withdrawn ৳{amount:,.2f}!", "warning")
+
     return redirect(url_for('view_goals'))
-
 
 if __name__ == '__main__':
     app.run(debug=True)
