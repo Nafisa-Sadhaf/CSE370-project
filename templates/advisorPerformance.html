@@ -5,36 +5,98 @@
     <div class="page-header">
         <div class="page-title">
             <h1>Advisor Performance Leaderboard</h1>
-            <p>Real-time analytics based on Portfolio Growth and Client Retention.</p>
+            <p>Live analytics — growth is calculated in real time from actual portfolio data.</p>
         </div>
     </div>
 
     <div class="analytics-grid">
-        {% for advisor, perf in stats %}
+        {% for s in stats %}
         <div class="advisor-card glass-card">
-            <div class="profile-card" style="margin-bottom:16px;">
-                <img src="https://i.pravatar.cc/150?u={{ advisor.AdvisorID }}" alt="{{ advisor.Name }}">
+
+            <!-- Advisor identity -->
+            <div class="profile-card" style="margin-bottom: 16px;">
+                <img src="https://i.pravatar.cc/150?u={{ s.advisor.AdvisorID }}"
+                     alt="{{ s.advisor.Name }}">
                 <div class="profile-info">
-                    <h4>{{ advisor.Name }}</h4>
-                    <p style="color:var(--text-secondary);">{{ advisor.ExperienceYears or 0 }} Years Experience</p>
+                    <h4>{{ s.advisor.Name }}</h4>
+                    <p style="color: var(--text-secondary);">
+                        {{ s.advisor.Specialization or 'Financial Advisor' }}
+                    </p>
+                    <p style="color: var(--text-secondary); font-size: 0.78rem;">
+                        {{ s.advisor.ExperienceYears or 0 }} Years Experience
+                    </p>
                 </div>
             </div>
+
+            <!-- Live computed stats -->
             <div class="stat-group">
                 <div class="stat-item">
                     <span class="label">Clients</span>
-                    <span class="value">{{ perf.TotalClients }}</span>
+                    <!-- TotalClients = COUNT of CLIENT rows where AdvisorID matches -->
+                    <span class="value">{{ s.total_clients }}</span>
                 </div>
                 <div class="stat-item">
                     <span class="label">Avg Growth</span>
-                    <span class="value growth-positive">+{{ perf.AvgPortfolioGrowth }}%</span>
+                    <!-- AvgPortfolioGrowth = average of
+                         (CurrentValue - PurchasePrice) / PurchasePrice * 100
+                         across all assets of all clients under this advisor -->
+                    <span class="value growth-positive">
+                        {{ '+' if s.avg_growth >= 0 else '' }}{{ s.avg_growth }}%
+                    </span>
                 </div>
             </div>
+
+            <!-- Total portfolio value managed by this advisor -->
+            <div style="margin-top: 14px; padding: 10px 12px;
+                        background: var(--hover-bg); border-radius: 8px;
+                        font-size: 0.85rem; color: var(--text-secondary);">
+                <span>Total AUM Managed:</span>
+                <!-- AUM = Assets Under Management
+                     = SUM of (Quantity * CurrentValue) for all client assets -->
+                <strong style="color: var(--accent-primary); margin-left: 6px;">
+                    BDT {{ "{:,.2f}".format(s.total_portfolio_value) }}
+                </strong>
+            </div>
+
         </div>
         {% else %}
-        <div class="glass-card" style="text-align:center;padding:40px;">
-            <p style="color:var(--text-secondary);">No performance data available yet.</p>
+        <div class="glass-card" style="text-align: center; padding: 40px;">
+            <p style="color: var(--text-secondary);">No advisor data available yet.</p>
         </div>
         {% endfor %}
+    </div>
+
+    <!-- Explanation box for faculty demo -->
+    <div class="glass-card" style="margin-top: 32px;">
+        <h3 style="margin-bottom: 16px;">
+            <i class="ri-information-line"></i> How This Is Calculated
+        </h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
+            <div style="padding: 14px; background: var(--hover-bg);
+                        border-radius: 10px; border-left: 4px solid var(--accent-primary);">
+                <p style="font-weight: 600; margin-bottom: 6px;">Total Clients</p>
+                <p style="font-size: 0.85rem; color: var(--text-secondary);">
+                    Counted live from the CLIENT table — any client whose
+                    AdvisorID matches this advisor is included.
+                </p>
+            </div>
+            <div style="padding: 14px; background: var(--hover-bg);
+                        border-radius: 10px; border-left: 4px solid var(--success);">
+                <p style="font-weight: 600; margin-bottom: 6px;">Avg Portfolio Growth</p>
+                <p style="font-size: 0.85rem; color: var(--text-secondary);">
+                    For every asset: (CurrentValue − PurchasePrice) ÷ PurchasePrice × 100.
+                    Then averaged across all assets of all clients under this advisor.
+                </p>
+            </div>
+            <div style="padding: 14px; background: var(--hover-bg);
+                        border-radius: 10px; border-left: 4px solid var(--accent-secondary);">
+                <p style="font-weight: 600; margin-bottom: 6px;">Total AUM</p>
+                <p style="font-size: 0.85rem; color: var(--text-secondary);">
+                    Assets Under Management — sum of (Quantity × CurrentValue)
+                    for every portfolio asset belonging to this advisor's clients.
+                </p>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
