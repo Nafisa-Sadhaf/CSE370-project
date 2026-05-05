@@ -16,6 +16,7 @@
             <h2>Capital<br>Advisor</h2>
         </div>
 
+        <!-- Error messages from Flask -->
         {% if error %}
             <p style="color:var(--danger);text-align:center;margin-bottom:12px;font-size:0.9rem;">{{ error }}</p>
         {% endif %}
@@ -23,6 +24,8 @@
             <p style="color:var(--danger);text-align:center;margin-bottom:12px;font-size:0.9rem;">{{ signup_error }}</p>
         {% endif %}
 
+        <!-- Login Form -->
+        <!-- NOTE: action="/login" sends form to Flask. method="POST" sends data securely. -->
         <form id="login-form" class="auth-form active" action="/login" method="POST">
             <h3 class="auth-title">Welcome Back</h3>
             <p class="auth-subtitle">Login to your account</p>
@@ -30,7 +33,7 @@
                 <label>Role</label>
                 <select name="role" required>
                     <option value="client">Client</option>
-                    <option value="admin">Admin</option>
+                    <option value="admin">Advisor</option>
                 </select>
             </div>
             <div class="input-group">
@@ -45,6 +48,7 @@
             <p class="auth-switch">Don't have an account? <span onclick="toggleAuth('signup')">Create one</span></p>
         </form>
 
+        <!-- Signup Form -->
         <form id="signup-form" class="auth-form" action="/signup" method="POST">
             <h3 class="auth-title">Create Account</h3>
             <p class="auth-subtitle">Join Capital Advisor today</p>
@@ -52,7 +56,7 @@
                 <label>Role</label>
                 <select name="role" required>
                     <option value="client">Client</option>
-                    <option value="admin">Admin</option>
+                    <option value="admin">Advisor</option>
                 </select>
             </div>
             <div class="input-group">
@@ -74,6 +78,7 @@
 </div>
 
 <script>
+// This toggles between login and signup form visually
 function toggleAuth(type) {
     if (type === 'login') {
         document.getElementById('login-form').classList.add('active');
@@ -83,6 +88,7 @@ function toggleAuth(type) {
         document.getElementById('login-form').classList.remove('active');
     }
 }
+// If there was a signup error, show the signup form automatically
 {% if signup_error %}
 toggleAuth('signup');
 {% endif %}
